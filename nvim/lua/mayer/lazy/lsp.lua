@@ -74,22 +74,30 @@ return {
 
         require("fidget").setup({})
         require("mason").setup()
+        require("mason-registry").refresh(function()
+            -- This will install typescript-language-server if it's not already installed
+            local mr = require("mason-registry")
+            if not mr.is_installed("typescript-language-server") then
+                vim.notify("Installing typescript-language-server...", vim.log.levels.INFO)
+                mr.get_package("typescript-language-server"):install()
+            end
+        end)
         require("mason-lspconfig").setup({
             ensure_installed = {
                 "lua_ls",
                 "rust_analyzer",
                 "gopls",
                 "pyright",
-                "ruff_lsp",
-                "intelephense", -- Only intelephense for PHP
+                "ruff",         -- The Mason package name
+                "intelephense",
                 "html",
                 "cssls",
-                "tsserver",     -- TypeScript server
-                "eslint",       -- JavaScript/TypeScript linting
-                "tailwindcss",  -- Tailwind CSS support
-                "dockerls",     -- Dockerfile support
-                "jsonls",       -- JSON support
-                "yamlls",       -- YAML support
+                "ts_ls",
+                "eslint",
+                "tailwindcss",
+                "dockerls",
+                "jsonls",
+                "yamlls",
             },
             handlers = {
                 function(server_name) -- default handler
@@ -97,10 +105,9 @@ return {
                         capabilities = capabilities
                     }
                 end,
-                ["ruff_lsp"] = function()
-                    require("lspconfig").ruff_lsp.setup({
+                ["ruff"] = function()
+                    require("lspconfig").ruff.setup({  -- Use ruff_lsp for lspconfig
                         capabilities = capabilities,
-                        -- You can add custom settings here if needed
                         settings = {
                             -- Ruff configuration options
                         }
@@ -153,7 +160,70 @@ return {
                         filetypes = { "css", "scss", "less" },
                     })
                 end,
-                zls = function()
+                -- Changed to use ts_ls as the handler key to match lspconfig
+                ["ts_ls"] = function()
+                    require("lspconfig").ts_ls.setup({
+                        capabilities = capabilities,
+                        filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact", "tsx" },
+                        root_dir = require("lspconfig").util.root_pattern("package.json", "tsconfig.json", ".git"),
+                        settings = {
+                            typescript = {
+                                inlayHints = {
+                                    includeInlayParameterNameHints = "all",
+                                    includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+                                    includeInlayFunctionParameterTypeHints = true,
+                                    includeInlayVariableTypeHints = true,
+                                    includeInlayPropertyDeclarationTypeHints = true,
+                                    includeInlayFunctionLikeReturnTypeHints = true,
+                                    includeInlayEnumMemberValueHints = true,
+                                }
+                            },
+                            javascript = {
+                                inlayHints = {
+                                    includeInlayParameterNameHints = "all",
+                                    includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+                                    includeInlayFunctionParameterTypeHints = true,
+                                    includeInlayVariableTypeHints = true,
+                                    includeInlayPropertyDeclarationTypeHints = true,
+                                    includeInlayFunctionLikeReturnTypeHints = true,
+                                    includeInlayEnumMemberValueHints = true,
+                                }
+                            }
+                        }
+                    })
+                end,
+                ["dockerls"] = function()
+                    require("lspconfig").dockerls.setup({
+                        capabilities = capabilities,
+                        filetypes = { "dockerfile" },
+                        root_dir = require("lspconfig").util.root_pattern("Dockerfile", ".git"),
+                    })
+                end,
+                ["jsonls"] = function()
+                    require("lspconfig").jsonls.setup({
+                        capabilities = capabilities,
+                        filetypes = { "json", "jsonc" },
+                    })
+                end,
+                ["yamlls"] = function()
+                    require("lspconfig").yamlls.setup({
+                        capabilities = capabilities,
+                        settings = {
+                            yaml = {
+                                schemas = {
+                                    ["https://json.schemastore.org/github-workflow.json"] = "/.github/workflows/*",
+                                    ["https://json.schemastore.org/github-action.json"] = "/.github/actions/*/action.y*ml",
+                                    ["https://json.schemastore.org/docker-compose.json"] = "docker-compose.y*ml",
+                                    ["https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json"] = "docker-compose.y*ml",
+                                    ["https://json.schemastore.org/kustomization.json"] = "kustomization.y*ml",
+                                    ["https://json.schemastore.org/helmfile.json"] = "helmfile.y*ml",
+                                    ["https://json.schemastore.org/chart.json"] = "Chart.y*ml",
+                                }
+                            }
+                        }
+                    })
+                end,
+                ["zls"] = function()
                     local lspconfig = require("lspconfig")
                     lspconfig.zls.setup({
                         root_dir = lspconfig.util.root_pattern(".git", "build.zig", "zls.json"),
@@ -196,44 +266,7 @@ return {
                         }
                     })
                 end,
-                ["tsserver"] = function()
-                    require("lspconfig").tsserver.setup({
-                        capabilities = capabilities,
-                        filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact", "tsx" },
-                        root_dir = require("lspconfig").util.root_pattern("package.json", "tsconfig.json", ".git"),
-                        settings = {
-                            typescript = {
-                                inlayHints = {
-                                    includeInlayParameterNameHints = "all",
-                                    includeInlayParameterNameHintsWhenArgumentMatchesName = false,
-                                    includeInlayFunctionParameterTypeHints = true,
-                                    includeInlayVariableTypeHints = true,
-                                    includeInlayPropertyDeclarationTypeHints = true,
-                                    includeInlayFunctionLikeReturnTypeHints = true,
-                                    includeInlayEnumMemberValueHints = true,
-                                }
-                            },
-                            javascript = {
-                                inlayHints = {
-                                    includeInlayParameterNameHints = "all",
-                                    includeInlayParameterNameHintsWhenArgumentMatchesName = false,
-                                    includeInlayFunctionParameterTypeHints = true,
-                                    includeInlayVariableTypeHints = true,
-                                    includeInlayPropertyDeclarationTypeHints = true,
-                                    includeInlayFunctionLikeReturnTypeHints = true,
-                                    includeInlayEnumMemberValueHints = true,
-                                }
-                            }
-                        }
-                    })
-                end,
-                ["dockerls"] = function()
-                    require("lspconfig").dockerls.setup({
-                        capabilities = capabilities,
-                        filetypes = { "dockerfile" },
-                        root_dir = require("lspconfig").util.root_pattern("Dockerfile", ".git"),
-                    })
-                end,}
+            }
         })
 
         local cmp_select = { behavior = cmp.SelectBehavior.Select }
@@ -268,8 +301,8 @@ return {
                 { name = 'nvim_lsp' },
                 { name = 'luasnip' },
             }, {
-                    { name = 'buffer' },
-                })
+                { name = 'buffer' },
+            })
         })
         vim.diagnostic.config({
             float = {
