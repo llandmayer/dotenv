@@ -23,10 +23,9 @@ return {
             silent = true
         })
 
-        -- Disable copilot for certain file types if needed
-        -- vim.g.copilot_filetypes = {
-        --     ["*"] = true,
-        --     ["markdown"] = false,
-        -- }
+        -- Enable copilot for all filetypes by default
+        vim.g.copilot_filetypes = {
+            ["*"] = true
+        }
     end
 }

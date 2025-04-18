@@ -21,6 +21,14 @@ return {
                 html = { "prettier" },
                 css = { "prettier" },
                 blade = { "blade-formatter" },
+                typescript = { "prettier", "eslint_d" },
+                javascript = { "prettier", "eslint_d" },
+                javascriptreact = { "prettier", "eslint_d" },
+                typescriptreact = { "prettier", "eslint_d" },
+                json = { "prettier" },
+                yaml = { "prettier" },
+                dockerfile = { "hadolint" },
+                markdown = { "prettier" },
             }
         })
         local cmp = require('cmp')
@@ -76,6 +84,12 @@ return {
                 "intelephense", -- Only intelephense for PHP
                 "html",
                 "cssls",
+                "tsserver",     -- TypeScript server
+                "eslint",       -- JavaScript/TypeScript linting
+                "tailwindcss",  -- Tailwind CSS support
+                "dockerls",     -- Dockerfile support
+                "jsonls",       -- JSON support
+                "yamlls",       -- YAML support
             },
             handlers = {
                 function(server_name) -- default handler
@@ -182,7 +196,44 @@ return {
                         }
                     })
                 end,
-            }
+                ["tsserver"] = function()
+                    require("lspconfig").tsserver.setup({
+                        capabilities = capabilities,
+                        filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact", "tsx" },
+                        root_dir = require("lspconfig").util.root_pattern("package.json", "tsconfig.json", ".git"),
+                        settings = {
+                            typescript = {
+                                inlayHints = {
+                                    includeInlayParameterNameHints = "all",
+                                    includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+                                    includeInlayFunctionParameterTypeHints = true,
+                                    includeInlayVariableTypeHints = true,
+                                    includeInlayPropertyDeclarationTypeHints = true,
+                                    includeInlayFunctionLikeReturnTypeHints = true,
+                                    includeInlayEnumMemberValueHints = true,
+                                }
+                            },
+                            javascript = {
+                                inlayHints = {
+                                    includeInlayParameterNameHints = "all",
+                                    includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+                                    includeInlayFunctionParameterTypeHints = true,
+                                    includeInlayVariableTypeHints = true,
+                                    includeInlayPropertyDeclarationTypeHints = true,
+                                    includeInlayFunctionLikeReturnTypeHints = true,
+                                    includeInlayEnumMemberValueHints = true,
+                                }
+                            }
+                        }
+                    })
+                end,
+                ["dockerls"] = function()
+                    require("lspconfig").dockerls.setup({
+                        capabilities = capabilities,
+                        filetypes = { "dockerfile" },
+                        root_dir = require("lspconfig").util.root_pattern("Dockerfile", ".git"),
+                    })
+                end,}
         })
 
         local cmp_select = { behavior = cmp.SelectBehavior.Select }
@@ -217,8 +268,8 @@ return {
                 { name = 'nvim_lsp' },
                 { name = 'luasnip' },
             }, {
-                { name = 'buffer' },
-            })
+                    { name = 'buffer' },
+                })
         })
         vim.diagnostic.config({
             float = {
