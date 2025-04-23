@@ -161,10 +161,11 @@ return {
                     })
                 end,
                 -- Changed to use ts_ls as the handler key to match lspconfig
+                -- "javascript", "javascriptreact",
                 ["ts_ls"] = function()
                     require("lspconfig").ts_ls.setup({
                         capabilities = capabilities,
-                        filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact", "tsx" },
+                        filetypes = { "typescript",  "typescriptreact", "tsx" },
                         root_dir = require("lspconfig").util.root_pattern("package.json", "tsconfig.json", ".git"),
                         settings = {
                             typescript = {
