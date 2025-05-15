@@ -21,6 +21,7 @@ local yank_group = augroup('HighlightYank', {})
 
 function R(name)
     require("plenary.reload").reload_module(name)
+
 end
 
 vim.filetype.add({
