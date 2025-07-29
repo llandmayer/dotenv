@@ -11,6 +11,9 @@ return {
     { "stevearc/dressing.nvim", opts = {} }
   },
   config = function()
+    -- Disable Tab mapping for Copilot - this is crucial!
+    vim.g.copilot_no_tab_map = true
+    
     require("codecompanion").setup({
       -- Configure adapters
       adapters = {
@@ -51,15 +54,31 @@ return {
 
       -- Strategy settings for chat and inline
       strategies = {
-        chat = {
-          adapter = "copilot",  -- Use Copilot adapter for chat
-        },
+                chat = {
+      adapter = {
+        name = "copilot",
+        model = "claude-sonnet-4",
+      },
+    },
+        -- chat = {
+        --   adapter = "copilot",  -- Use Copilot adapter for chat
+        --   model = "claude-sonnet-4",  -- Specify the model for chat
+        -- },
         inline = {
-          adapter = "copilot",  -- Use Copilot adapter for inline suggestions
+      adapter = {
+        name = "copilot",
+        model = "claude-sonnet-4",
+      },
           auto_trigger = true,
           trigger_chars = 3,
           accept = "<C-a>",
         },
+        cmd = {
+      adapter = {
+        name = "copilot",
+        model = "claude-sonnet-4",
+      },
+                }
       },
     })
 

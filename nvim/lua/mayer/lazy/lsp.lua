@@ -84,6 +84,7 @@ return {
         end)
         require("mason-lspconfig").setup({
             ensure_installed = {
+                "terraformls",
                 "lua_ls",
                 "rust_analyzer",
                 "gopls",
@@ -306,6 +307,15 @@ return {
             })
         })
         vim.diagnostic.config({
+            virtual_text = {
+                enabled = true,
+                source = "if_many",     -- Only show source if multiple sources
+                spacing = 2,
+                prefix = "■",
+                format = function(diagnostic)
+                    return string.format("%s (%s)", diagnostic.message, diagnostic.source)
+                end,
+            },
             float = {
                 focusable = false,
                 style = "minimal",
